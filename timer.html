@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cronômetro</title>
+<script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{display:flex;flex-direction:column;gap:8px;padding:8px 12px;background:#fff;color:#12203a;font-family:"Segoe UI",system-ui,sans-serif}
+#d{flex:1;display:flex;align-items:center;justify-content:center;font-size:min(22vw,38vh);font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+#d.warn{color:#c62828}
+.row{display:flex;gap:6px;align-items:center}
+button{flex:1;padding:9px 4px;border:0;border-radius:4px;color:#fff;font:600 15px "Segoe UI",sans-serif;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid #1565c0;outline-offset:2px}
+#i{background:#2e7d32}#p{background:#d84315}#r{background:#455a64}
+label{font-size:13px;display:flex;align-items:center;gap:4px}
+input{width:52px;padding:4px;font:14px "Segoe UI",sans-serif;border:1px solid #90a4ae;border-radius:4px}
+</style></head><body>
+<div id="d" role="timer" aria-live="off">03:00</div>
+<div class="row">
+<button id="i">Iniciar</button><button id="p">Parar</button><button id="r">Resetar</button>
+</div>
+<div class="row" style="justify-content:center">
+<label>Min <input id="m" type="number" min="0" max="99" value="3"></label>
+<label>Seg <input id="s" type="number" min="0" max="59" value="0"></label>
+</div>
+<script>
+if(window.Office)Office.onReady(function(){});
+var $=function(x){return document.getElementById(x)},total,left,end,tick=null;
+function show(){
+  $('d').textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0');
+  $('d').classList.toggle('warn',total>30&&left<=30);
+}
+function halt(){clearInterval(tick);tick=null}
+function left_now(){return Math.max(0,Math.ceil((end-Date.now())/1000))}
+function start(){
+  if(tick)return;
+  if(left<=0)left=total;
+  if(left<=0)return;
+  end=Date.now()+left*1000;
+  tick=setInterval(function(){left=left_now();show();if(!left)halt()},200);
+  show();
+}
+function pause(){if(tick){left=left_now();halt();show()}}
+function reset(){halt();total=Math.max(0,(+$('m').value||0)*60+(+$('s').value||0));left=total;show()}
+$('i').onclick=start;$('p').onclick=pause;$('r').onclick=reset;
+$('m').onchange=$('s').onchange=reset;
+reset();
+</script></body></html>
